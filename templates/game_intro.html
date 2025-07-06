@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải mã kho báu</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    </head>
+<body class="antialiased">
+    <audio id="backgroundMusic" loop>
+        <source src="{{ url_for('static', filename='audio/intro.mp3') }}" type="audio/mpeg">
+        Trình duyệt của bạn không hỗ trợ phần tử audio.
+    </audio>
+
+    <button id="settingsButton" class="top-right-settings-button">CÀI ĐẶT</button>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" class="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-sm z-50">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="game-container">
+        <div class="game-content">
+            <h1 class="game-title">GIẢI MÃ KHO BÁU</h1>
+
+            <div class="main-buttons">
+                <a href="{{ url_for('select_level') }}" class="main-button play">CHƠI</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModalBackdrop" class="settings-modal-backdrop"></div>
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-header">
+            <h2>Cài đặt</h2>
+            <span class="close-settings-button" id="closeSettingsButton">&times;</span>
+        </div>
+        <div class="settings-modal-body">
+            <form action="{{ url_for('intro') }}" method="POST">
+                <input type="hidden" name="action" value="save_settings">
+                
+                <div class="setting-item">
+                    <label for="volume" class="block text-gray-700 font-medium mb-2">Âm lượng:</label>
+                    <input type="range" id="volume" name="volume" min="0" max="100" step="1" value="{{ current_volume }}">
+                    <span id="volumeValue" class="text-gray-600 text-sm mt-1 block text-center">{{ current_volume }}</span>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="language" class="block text-gray-700 font-medium mb-2">Ngôn ngữ:</label>
+                    <select id="language" name="language">
+                        <option value="vi" {% if current_language == 'vi' %}selected{% endif %}>Tiếng Việt</option>
+                        <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
+                    </select>
+                </div>
+                
+                <div class="settings-modal-footer">
+                    <button type="submit" class="save-settings-button">
+                        Lưu Cài Đặt
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const settingsModal = document.getElementById('settingsModal');
+            const settingsModalBackdrop = document.getElementById('settingsModalBackdrop');
+            const settingsButton = document.getElementById('settingsButton');
+            const closeSettingsButton = document.getElementById('closeSettingsButton'); 
+            const flashMessages = document.getElementById('flash-messages');
+            
+            // Lấy giá trị âm lượng ban đầu từ Flask
+            const initialVolume = {{ current_volume }}; 
+            
+            const volumeSlider = document.getElementById('volume');
+            const volumeValueSpan = document.getElementById('volumeValue');
+
+            // Cập nhật giá trị hiển thị của slider
+            if (volumeSlider && volumeValueSpan) {
+                volumeSlider.value = initialVolume;
+                volumeValueSpan.textContent = initialVolume;
+                volumeSlider.oninput = function() {
+                    volumeValueSpan.textContent = this.value;
+                };
+            }
+
+            // Thiết lập âm lượng nhạc nền và tự động phát
+            if (backgroundMusic) {
+                backgroundMusic.volume = initialVolume / 100; // Chia cho 100 vì volume API là từ 0.0 đến 1.0
+                if (initialVolume > 0) { // Chỉ tự động phát nếu âm lượng > 0
+                    backgroundMusic.play()
+                        .then(() => {
+                            console.log('Nhạc nền đã được phát.');
+                        })
+                        .catch(error => {
+                            console.warn('Tự động phát nhạc bị chặn (có thể cần tương tác người dùng đầu tiên):', error);
+                            // Hiển thị thông báo hoặc nút "Phát nhạc" nếu cần
+                        });
+                } else {
+                    backgroundMusic.pause();
+                }
+            }
+
+            // Event listeners for settings modal
+            if (settingsButton) {
+                settingsButton.onclick = function() {
+                    settingsModal.style.display = "flex"; // Hiển thị modal
+                    settingsModalBackdrop.style.display = "block"; // Hiển thị lớp phủ
+                }
+            }
+            if (closeSettingsButton) { 
+                closeSettingsButton.onclick = function() {
+                    settingsModal.style.display = "none"; // Ẩn modal
+                    settingsModalBackdrop.style.display = "none"; // Ẩn lớp phủ
+                }
+            }
+            
+            // Đóng modal khi click vào lớp phủ nền mờ
+            if (settingsModalBackdrop) {
+                settingsModalBackdrop.onclick = function(event) {
+                    if (event.target === settingsModalBackdrop) { // Đảm bảo chỉ đóng khi click vào chính backdrop
+                        settingsModal.style.display = "none";
+                        settingsModalBackdrop.style.display = "none";
+                    }
+                }
+            }
+
+            // Hide flash messages after a few seconds
+            if (flashMessages) {
+                setTimeout(() => {
+                    flashMessages.style.transition = 'opacity 1s ease-out';
+                    flashMessages.style.opacity = '0';
+                    setTimeout(() => flashMessages.remove(), 1000);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

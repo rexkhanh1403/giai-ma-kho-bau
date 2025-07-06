@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chọn Cấp Độ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+        }
+
+        .game-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Sử dụng url_for để Flask tìm đúng đường dẫn static */
+            background-image: url('{{ url_for('static', filename='images/background.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.7);
+            z-index: 0;
+        }
+
+        .level-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 1000px;
+            padding: 2rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .level-title-box {
+            background-color: #3f51b5;
+            border: 3px solid #1a237e;
+            border-radius: 0.75rem;
+            padding: 0.8rem 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.5);
+            transform: skewX(-10deg);
+            display: inline-block;
+        }
+
+        .level-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.5rem;
+            color: #FFD700;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.8);
+            transform: skewX(10deg);
+            white-space: nowrap;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 2rem;
+            justify-items: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 2rem;
+        }
+
+        .level-item {
+            font-family: 'Times New Roman', Times, serif;
+            border: 3px solid #FFD700;
+            border-radius: 1rem;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+            text-decoration: none; /* Add this to remove underline for links */
+            position: relative; /* For lock icon positioning */
+        }
+
+        .level-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
+        }
+
+        .level-item.locked {
+            pointer-events: none; /* Disable clicks */
+            opacity: 0.5; /* Dim locked levels */
+            border-color: #616161; /* Darker border for locked */
+            color: #616161; /* Darker text for locked */
+            background-color: rgba(0, 0, 0, 0.5); /* Darker background */
+            box-shadow: none; /* No shadow for locked */
+            transform: none; /* No hover effect for locked */
+        }
+
+        .level-item.locked .lock-icon {
+            display: block; /* Show lock icon for locked levels */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px; /* Adjust size as needed */
+            height: 50px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%23aaa' d='M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144c0-70.7 57.3-128 128-128s128 57.3 128 128v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
+        }
+        
+        .level-item.unlocked .lock-icon {
+            display: none; /* Hide lock icon for unlocked levels */
+        }
+
+        /* Checkmark for completed levels */
+        .level-item.completed:after {
+            content: '✔'; /* Unicode checkmark */
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 1.5rem;
+            color: #4CAF50; /* Green checkmark */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        /* Container cho cả hai nút */
+        .button-group-container {
+            position: absolute;
+            bottom: 2rem;
+            left: 0; /* Đặt ở bên trái */
+            right: 0; /* Kéo dài để căn giữa nội dung */
+            display: flex;
+            justify-content: space-between; /* Căn nút "Exit" sang phải và nút "Back to Main" sang trái */
+            padding: 0 2rem; /* Thêm padding hai bên */
+            width: 100%;
+        }
+
+        .action-button { /* Lớp chung cho cả hai nút để tái sử dụng CSS */
+            font-family: 'Times New Roman', Times, serif;
+            color: white;
+            border: 3px solid;
+            border-radius: 0.75rem;
+            padding: 0.8rem 1.8rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.6);
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-block; /* Quan trọng để padding và border hoạt động đúng cho thẻ <a> */
+            text-align: center;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+        }
+
+        .action-button:active {
+            transform: translateY(1px) translateX(1px);
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+        }
+
+        .reset-button { /* Nút "Đặt lại Game" */
+            background-color: #f44336;
+            border-color: #d32f2f;
+        }
+
+        .reset-button:hover {
+            background-color: #d32f2f;
+        }
+
+        .main-menu-button { /* Nút "Quay lại màn hình chính" */
+            background-color: #4CAF50; /* Màu xanh lá cây */
+            border-color: #388E3C; /* Viền xanh đậm hơn */
+        }
+
+        .main-menu-button:hover {
+            background-color: #388E3C;
+        }
+
+        @media (max-width: 768px) {
+            .level-title {
+                font-size: 2rem;
+            }
+            .level-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 1.5rem;
+            }
+            .level-item {
+                width: 100px;
+                height: 100px;
+                font-size: 2rem;
+            }
+            .level-item.locked .lock-icon {
+                font-size: 3rem;
+                width: 40px;
+                height: 40px;
+            }
+            .action-button {
+                font-size: 0.9rem;
+                padding: 0.7rem 1.5rem;
+            }
+            .button-group-container {
+                flex-direction: column; /* Xếp chồng nút trên màn hình nhỏ */
+                align-items: center; /* Căn giữa các nút khi xếp chồng */
+                gap: 1rem; /* Khoảng cách giữa các nút */
+                bottom: 1rem;
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .level-title {
+                font-size: 1.5rem;
+                padding: 0.6rem 1rem;
+            }
+            .level-grid {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 1rem;
+            }
+            .level-item {
+                width: 80px;
+                height: 80px;
+                font-size: 1.8rem;
+            }
+            .level-item.locked .lock-icon {
+                font-size: 2.5rem;
+                width: 30px;
+                height: 30px;
+            }
+            .action-button {
+                font-size: 0.8rem;
+                padding: 0.6rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-background"></div>
+    <div class="level-container">
+        <div class="level-title-box">
+            <h1 class="level-title">CHỌN CẤP ĐỘ</h1>
+        </div>
+
+        <div class="level-grid">
+            <a href="{{ url_for('level_01') }}" 
+               class="level-item {% if levels_completed['level_01'] %}completed{% endif %}">
+                01
+            </a>
+            <a href="{{ url_for('level_02') }}" 
+               class="level-item {% if not levels_unlocked['level_02'] %}locked{% endif %} {% if levels_completed['level_02'] %}completed{% endif %}">
+                {% if not levels_unlocked['level_02'] %}
+                    <span class="lock-icon"></span>
+                {% else %}
+                    02
+                {% endif %}
+            </a>
+            <a href="{{ url_for('level_03') }}" 
+               class="level-item {% if not levels_unlocked['level_03'] %}locked{% endif %} {% if levels_completed['level_03'] %}completed{% endif %}">
+                {% if not levels_unlocked['level_03'] %}
+                    <span class="lock-icon"></span>
+                {% else %}
+                    03
+                {% endif %}
+            </a>
+            <a href="{{ url_for('level_04') }}" 
+               class="level-item {% if not levels_unlocked['level_04'] %}locked{% endif %} {% if levels_completed['level_04'] %}completed{% endif %}">
+                {% if not levels_unlocked['level_04'] %}
+                    <span class="lock-icon"></span>
+                {% else %}
+                    04
+                {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <div class="button-group-container">
+        <a href="{{ url_for('intro') }}" class="action-button main-menu-button">Quay lại màn hình chính</a>
+
+        <button class="action-button reset-button" onclick="resetGame()">Đặt lại game</button>
+    </div>
+
+    <script>
+        function resetGame() {
+            if (confirm('Bạn có chắc chắn muốn đặt lại tất cả các màn chơi không? Tiến trình của bạn sẽ bị mất.')) {
+                fetch('/reset_game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Trò chơi đã được đặt lại!');
+                        window.location.reload(); // Reload the page to reflect reset state
+                    } else {
+                        alert('Có lỗi xảy ra khi đặt lại trò chơi.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi đặt lại trò chơi.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

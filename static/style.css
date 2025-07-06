@@ -1,0 +1,499 @@
+/* static/style.css */
+
+/* Đảm bảo rằng body không có margin/padding mặc định để hình nền phủ kín */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%; /* Quan trọng để body chiếm toàn bộ chiều cao của khung nhìn */
+    /* overflow: hidden; */ /* Bỏ overflow hidden ở đây để cho phép cuộn nội dung nếu cần,
+                                hoặc đặt nó trên các container cụ thể.
+                                Nếu bạn muốn nền luôn cố định và không có cuộn,
+                                hãy giữ nó và đảm bảo nội dung của bạn không vượt quá chiều cao màn hình. */
+    font-family: 'Times New Roman', sans-serif; /* Sử dụng font Roboto bạn đã import */
+    color: white; /* Màu chữ mặc định cho nền tối */
+    position: relative; /* Quan trọng cho các phần tử con dùng position: absolute */
+}
+
+/* Các kiểu dáng cho hình nền của trang game */
+body {
+    background-image: url('images/dungeon_background.jpg'); /* Đảm bảo đường dẫn này chính xác */
+    background-size: cover; /* Phủ toàn bộ khu vực mà không bị méo */
+    background-repeat: no-repeat; /* Không lặp lại hình ảnh */
+    background-position: center center; /* Căn giữa hình ảnh */
+    background-attachment: fixed; /* Giữ hình nền cố định khi cuộn (nếu có) */
+    display: flex; /* Sử dụng flexbox để căn giữa nội dung */
+    flex-direction: column;
+    justify-content: center; /* Căn giữa theo chiều dọc */
+    align-items: center; /* Căn giữa theo chiều ngang */
+    min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao khung nhìn */
+}
+
+/* Các kiểu dáng chung cho thông báo Flash */
+.flash-message {
+    padding: 10px 20px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    width: fit-content;
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    /* animation: fadeOut 5s forwards; - Sẽ xử lý bằng JS để kiểm soát tốt hơn */
+}
+
+.flash-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.flash-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.flash-message.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.flash-message.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Keyframes cho hiệu ứng fadeOut (giữ nguyên nhưng logic JS sẽ kiểm soát) */
+@keyframes fadeOut {
+    from { opacity: 1; }
+    90% { opacity: 1; } /* Giữ hiển thị đầy đủ trong phần lớn thời gian */
+    to { opacity: 0; display: none; }
+}
+
+/* Các kiểu dáng cho game_intro.html và các trang level */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Đảm bảo container chiếm toàn bộ chiều cao */
+    padding: 20px;
+    box-sizing: border-box; /* Bao gồm padding vào chiều rộng/cao */
+    width: 100%; /* Chiếm toàn bộ chiều rộng có thể */
+}
+
+.game-content {
+    background-color: rgba(0, 0, 0, 0.7); /* Nền đen trong suốt cho nội dung */
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); /* Hiệu ứng phát sáng xanh */
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.game-title {
+    font-family: 'Times New Roman', cursive; /* Sử dụng font retro */
+    font-size: 3rem;
+    font-weight: 700;
+    color: #FFD700; /* Màu vàng Gold */
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+    margin-top: 0; /* Đã có trong body, nên reset ở đây nếu cần */
+    margin-bottom: 20px;
+    animation: fadeInDown 1s ease-out; /* Giữ animation */
+}
+
+/* Animation cho game title */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.text-yellow-400 {
+    color: #fbd38d; /* Một màu vàng nhạt */
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.main-buttons { /* Các nút chính trong trang intro */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 30px; /* Khoảng cách từ tiêu đề */
+}
+
+.main-button {
+    padding: 1.25rem 3rem;
+    border-radius: 9999px; /* Pill shape */
+    font-weight: 700;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.main-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: skewX(-20deg);
+    transition: all 0.7s ease;
+}
+.main-button:hover::before {
+    left: 125%;
+}
+.main-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+.main-button.play {
+    background-color: #34D399; /* Màu xanh lá cây */
+}
+.main-button.play:hover {
+    background-color: #10B981;
+}
+
+/* Style cho nút cài đặt nhỏ ở góc trên bên phải */
+.top-right-settings-button {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 20;
+    
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+.top-right-settings-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+.top-right-settings-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles cho Modal cài đặt */
+.settings-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10;
+    display: none; /* Mặc định ẩn */
+}
+
+.settings-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f0f0f0; /* Nền sáng hơn cho modal */
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    z-index: 15;
+    display: none; /* Mặc định ẩn */
+    flex-direction: column;
+    width: 90%;
+    max-width: 400px;
+    color: #333; /* Đảm bảo màu chữ trong modal dễ đọc */
+}
+
+.settings-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.settings-modal-header h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.close-settings-button {
+    cursor: pointer;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #555;
+    transition: color 0.2s ease;
+}
+
+.close-settings-button:hover {
+    color: #000;
+}
+
+.settings-modal-body {
+    flex-grow: 1;
+    padding-bottom: 1.5rem;
+}
+
+.setting-item {
+    margin-bottom: 1.5rem;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #444;
+}
+
+.setting-item input[type="range"],
+.setting-item select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+/* Styles cho slider âm lượng */
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: 1px solid #000;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+    margin-top: -9px;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8.4px;
+    cursor: pointer;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    background: #303030;
+    border-radius: 1.3px;
+    border: 0.2px solid #010101;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #505050;
+}
+
+.settings-modal-footer {
+    padding-top: 1rem;
+    text-align: right;
+}
+
+.save-settings-button {
+    background-color: #34D399;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.save-settings-button:hover {
+    background-color: #10B981;
+}
+
+/* Các lớp ẩn/hiện chung (có thể bị ghi đè bởi Tailwind) */
+.hidden {
+    display: none !important;
+}
+
+/* Các kiểu dáng cho level selection và level screens (đã có trong style.css từ trước) */
+/* ... (giữ nguyên các phần CSS còn lại mà tôi đã cung cấp trước đó) ... */
+
+.level-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.level-item {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    border: 1px solid rgba(0, 255, 255, 0.5);
+}
+
+.level-item.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: rgba(255, 0, 0, 0.5);
+}
+
+.level-item.locked .level-button {
+    background-color: #888;
+    cursor: not-allowed;
+}
+
+.level-item.completed {
+    border-color: #4CAF50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+.level-item h3 {
+    color: #ffd700;
+    margin-top: 0;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 70%;
+    max-width: 300px;
+    margin-bottom: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.hint-box {
+    background-color: rgba(255, 255, 0, 0.1);
+    border: 1px solid #ffcc00;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    color: #ffd700;
+    font-style: italic;
+}
+
+.next-level-button-container {
+    margin-top: 20px;
+}
+
+
+/* CSS cho trang Login/Register */
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.auth-box {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 40px;
+    border-radius: 15px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    text-align: center;
+}
+
+.auth-box h2 {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    color: #4CAF50;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #fbd38d;
+}
+
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.auth-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.auth-button:hover {
+    background-color: #45a049;
+}
+
+.auth-link {
+    display: block;
+    margin-top: 20px;
+    color: #fbd38d;
+    text-decoration: none;
+    font-size: 1em;
+    transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+    color: #fff;
+}

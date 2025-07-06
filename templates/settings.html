@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giải mã kho báu</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-image: url('{{ url_for('static', filename='images/background.jpg') }}'); /* Đường dẫn hình nền */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Đảm bảo không có thanh cuộn */
+            position: relative;
+        }
+        /* Các style khác cho tiêu đề, nút, vv. */
+        .game-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #FFD700; /* Màu vàng Gold */
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5); /* Tạo bóng cho chữ */
+            margin-top: 5rem;
+            animation: fadeInDown 1s ease-out;
+        }
+        .main-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 5rem;
+        }
+        .main-button {
+            padding: 1.25rem 3rem;
+            border-radius: 9999px; /* Bo tròn hoàn toàn */
+            font-weight: 700;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative; /* Cho hiệu ứng lấp lánh */
+            overflow: hidden; /* Che đi phần lấp lánh thừa */
+        }
+        .main-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 50%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3); /* Hiệu ứng lấp lánh */
+            transform: skewX(-20deg);
+            transition: all 0.7s ease;
+        }
+        .main-button:hover::before {
+            left: 125%;
+        }
+        .main-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+        }
+        .main-button.play {
+            background-color: #34D399; /* Xanh lá cây */
+        }
+        .main-button.play:hover {
+            background-color: #10B981;
+        }
+        .main-button.weapons {
+            background-color: #FBBF24; /* Vàng cam */
+        }
+        .main-button.weapons:hover {
+            background-color: #F59E0B;
+        }
+        .main-button.settings {
+            background-color: #60A5FA; /* Xanh dương */
+        }
+        .main-button.settings:hover {
+            background-color: #3B82F6;
+        }
+        /* Keyframes cho animation */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Style cho nút cài đặt ở góc trên bên phải */
+        .settings-icon-container {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10; /* Đảm bảo nút nằm trên cùng */
+        }
+        .settings-icon {
+            background-color: rgba(0, 0, 0, 0.5); /* Nền mờ cho nút */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .settings-icon:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .settings-icon svg {
+            width: 1.75rem;
+            height: 1.75rem;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 100; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <audio id="backgroundMusic" loop>
+        <source src="{{ url_for('static', filename='audio/game-intro-345507.mp3') }}" type="audio/mpeg">
+        Trình duyệt của bạn không hỗ trợ phần tử audio.
+    </audio>
+
+    <h1 class="game-title">GIẢI MÃ KHO BÁU</h1>
+
+    <div class="main-buttons">
+        <a href="{{ url_for('select_level') }}" class="main-button play">CHƠI</a>
+        <a href="{{ url_for('tool_page') }}" class="main-button weapons">VŨ KHÍ</a>
+        <!-- Use an ID to trigger the modal instead of a direct link -->
+        <button id="settingsButton" class="main-button settings">CÀI ĐẶT</button>
+    </div>
+
+    <!-- Flash Messages Display -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div id="flash-messages" class="absolute top-4 left-1/2 -translate-x-1/2 w-full max-w-sm z-50">
+                {% for category, message in messages %}
+                    <div class="p-3 mb-2 rounded-lg text-white text-center
+                                {% if category == 'success' %} bg-green-500
+                                {% elif category == 'error' %} bg-red-500
+                                {% else %} bg-blue-500
+                                {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Cài đặt</h2>
+            <form action="{{ url_for('intro') }}" method="POST">
+                <input type="hidden" name="action" value="save_settings">
+                
+                <div class="mb-4">
+                    <label for="sound_enabled" class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="sound_enabled" name="sound_enabled" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                {% if current_sound_enabled %}checked{% endif %}>
+                        <span class="text-gray-700 text-lg">Bật/Tắt nhạc nền</span>
+                    </label>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="language" class="block text-gray-700 text-lg font-medium mb-2">Ngôn ngữ:</label>
+                    <select id="language" name="language" class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-lg">
+                        <option value="vi" {% if current_language == 'vi' %}selected{% endif %}>Tiếng Việt</option>
+                        <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
+                        <!-- Add more languages if needed -->
+                    </select>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+                        Lưu Cài Đặt
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const settingsModal = document.getElementById('settingsModal');
+            const settingsButton = document.getElementById('settingsButton');
+            const closeButton = document.querySelector('.close-button');
+            const flashMessages = document.getElementById('flash-messages');
+
+            // Get initial music state from Flask context (passed from Python)
+            const initialMusicEnabled = {{ current_sound_enabled | tojson }};
+            
+            // Check the checkbox in the modal based on the initial state
+            const soundEnabledCheckbox = document.getElementById('sound_enabled');
+            if (soundEnabledCheckbox) {
+                soundEnabledCheckbox.checked = initialMusicEnabled;
+            }
+
+            // Initial music playback based on Flask context
+            if (initialMusicEnabled) {
+                backgroundMusic.play()
+                    .then(() => {
+                        console.log('Nhạc nền đã được phát.');
+                    })
+                    .catch(error => {
+                        console.log('Tự động phát nhạc bị chặn:', error);
+                        // User interaction might be needed to play music
+                    });
+            } else {
+                backgroundMusic.pause();
+            }
+
+            // Event listeners for modal
+            if (settingsButton) {
+                settingsButton.onclick = function() {
+                    settingsModal.style.display = "flex"; // Show the modal
+                }
+            }
+            if (closeButton) {
+                closeButton.onclick = function() {
+                    settingsModal.style.display = "none"; // Hide the modal
+                }
+            }
+
+            // Close modal when clicking outside of the content
+            window.onclick = function(event) {
+                if (event.target == settingsModal) {
+                    settingsModal.style.display = "none";
+                }
+            }
+
+            // Hide flash messages after a few seconds
+            if (flashMessages) {
+                setTimeout(() => {
+                    flashMessages.style.transition = 'opacity 1s ease-out';
+                    flashMessages.style.opacity = '0';
+                    setTimeout(() => flashMessages.remove(), 1000); // Remove after fade out
+                }, 3000); // 3 seconds
+            }
+        });
+    </script>
+</body>
+</html>
